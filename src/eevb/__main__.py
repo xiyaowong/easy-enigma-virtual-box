@@ -66,6 +66,7 @@ def generate_evb_config_xml(evb_config: EVBConfig) -> str:
 
     embedded_files = ET.SubElement(files_section, "Files")
     _items = evb_config.files.items
+    # region Add virtual folders
     add_virtual_folder(embedded_files, "%DEFAULT FOLDER%", _items.default_folder)
     add_virtual_folder(embedded_files, "%SYSTEM FOLDER%", _items.system_folder)
     add_virtual_folder(embedded_files, "%WINDOWS FOLDER%", _items.windows_folder)
@@ -83,6 +84,7 @@ def generate_evb_config_xml(evb_config: EVBConfig) -> str:
     add_virtual_folder(embedded_files, "%Local,ApplicationData FOLDER%", _items.local_application_data_folder)
     add_virtual_folder(embedded_files, "%SYSTEM DRIVE%", _items.system_drive)
     add_virtual_folder(embedded_files, "%UserProfile FOLDER%", _items.user_profile_folder)
+    # endregion
 
     xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
     return minidom.parseString(xml_bytes).toprettyxml(indent="  ").replace("__EasyEnigmaVirtualBox__", "")
@@ -95,24 +97,28 @@ def add_virtual_folder(parent: ET.Element, folder: str, items: list[str]) -> Non
     ET.SubElement(element, "Type").text = "3"
     ET.SubElement(element, "Name").text = folder
     files = ET.SubElement(element, "Files")
-    add_file_entries(files, items, include_self_dir=False)
+    add_file_entries(files, items, with_dir=False)
 
 
-def add_file_entries(parent: ET.Element, items: list[str], include_self_dir: bool = True) -> None:
+def add_file_entries(parent: ET.Element, items: list[str], with_dir: bool = True) -> None:
     for item in items:
+        add_dir = item.endswith("*") or with_dir
+        item = item.rstrip("*").strip()
         path = Path(item)
         if not path.exists():
             continue
 
+        if path.is_file():
+            parent.append(create_file_element(path))
+            continue
+
         if path.is_dir():
-            if include_self_dir:
+            if add_dir:
                 element = create_file_element(path)
                 parent.append(element)
                 add_file_entries(element, [str(p) for p in path.iterdir()])
             else:
                 add_file_entries(parent, [str(p) for p in path.iterdir()])
-        else:
-            parent.append(create_file_element(path))
 
 
 def create_file_element(path: Path) -> ET.Element:

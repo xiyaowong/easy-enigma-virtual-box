@@ -64,6 +64,26 @@ eevb build --help
 - `files.compress`: 是否压缩嵌入文件
 - `files.items`: 各虚拟目录下要包含的文件或文件夹路径列表
 
+
+**注意：** 默认情况下，配置文件中的目录路径只会包含该目录下的所有文件和子目录，不会包含目录本身。如果需要将目录本身也包含进去，请在路径末尾加上 `*`，例如：`folder/to/include*`。
+
+**示例**
+
+假设有如下目录结构：
+
+```
+project_folder/
+├── data/
+│   ├── file1.txt
+│   └── file2.txt
+```
+
+在配置文件中：
+
+- `"data/"` 只会包含 `file1.txt` 和 `file2.txt`，不会包含 `data` 文件夹本身。
+- `"data/*"` 会包含整个 `data` 文件夹（包括其下所有内容），即虚拟化时会保留 `data` 目录结构。
+
+
 支持的虚拟目录包括：`DefaultFolder`, `SystemFolder`, `WindowsFolder`, `MyDocumentsFolder`, `ProgramFilesFolder` 等（见模板）。
 
 ---
@@ -132,5 +152,27 @@ The JSON config includes:
 - `files.delete_on_exit`: delete files after exit
 - `files.compress`: compress embedded files
 - `files.items`: lists of files/folders for each virtual directory
+
+
+**Note:** By default, specifying a folder path in the config will only include its contents (files and subfolders), not the folder itself. To include the folder itself, append `*` to the path, e.g. `folder/to/include*`.
+
+
+**Example**
+
+Suppose you have the following structure:
+
+```
+project_folder/
+├── data/
+│   ├── file1.txt
+│   └── file2.txt
+```
+
+In the config file:
+
+- `"data/"` will only include `file1.txt` and `file2.txt`, not the `data` folder itself.
+- `"data/*"` will include the entire `data` folder (with all its contents), preserving the directory structure in the virtualized output.
+
+
 
 Supported virtual folders: `DefaultFolder`, `SystemFolder`, `WindowsFolder`, `MyDocumentsFolder`, `ProgramFilesFolder`, etc. (see template).
