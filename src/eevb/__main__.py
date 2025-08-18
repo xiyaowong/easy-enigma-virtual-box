@@ -11,7 +11,10 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from xml.dom import minidom
 
-from models import EVBConfig
+try:
+    from .models import EVBConfig
+except ImportError:
+    from models import EVBConfig  # type: ignore
 
 EVB_EXECUTABLE = Path(__file__).parent / "data" / "enigmavbconsole.exe"
 if not EVB_EXECUTABLE.exists():
