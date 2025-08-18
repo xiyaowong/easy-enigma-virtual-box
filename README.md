@@ -46,6 +46,24 @@ eevb build myconfig.json
 eevb myconfig.json
 ```
 
+### 快速打包（无需配置文件）
+
+直接指定输入、输出和要嵌入的文件或文件夹：
+
+```bash
+eevb quick -i <输入exe文件> -o <输出exe文件> [options] <要嵌入的文件或文件夹...>
+```
+
+可选参数：
+- `-c, --compress`      压缩嵌入文件
+- `-d, --delete_on_exit`  运行后删除解压文件
+
+示例：
+```bash
+eevb quick -i app.exe -o app.box.exe data/ config.json
+eevb quick -i app.exe -o app.box.exe -c -d data/*
+```
+
 ### 查看帮助
 
 ```bash
@@ -134,6 +152,24 @@ Or shorthand (pass JSON directly):
 
 ```bash
 eevb myconfig.json
+```
+
+### Quick Build (No Config File)
+
+Directly specify input, output, and files/folders to embed:
+
+```bash
+eevb quick -i <input exe> -o <output exe> [options] <files or folders to embed...>
+```
+
+Options:
+- `-c, --compress`        Compress embedded files
+- `-d, --delete_on_exit`  Delete extracted files on exit
+
+Examples:
+```bash
+eevb quick -i app.exe -o app.box.exe data/ config.json
+eevb quick -i app.exe -o app.box.exe -c -d data/*
 ```
 
 ### Show Help

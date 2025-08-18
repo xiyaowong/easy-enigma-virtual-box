@@ -12,9 +12,9 @@ from pathlib import Path
 from xml.dom import minidom
 
 try:
-    from .models import EVBConfig
+    from .models import EmbeddedItems, EVBConfig, FileOptions
 except ImportError:
-    from models import EVBConfig  # type: ignore
+    from models import EmbeddedItems, EVBConfig, FileOptions  # type: ignore
 
 EVB_EXECUTABLE = Path(__file__).parent / "data" / "enigmavbconsole.exe"
 if not EVB_EXECUTABLE.exists():
@@ -139,6 +139,23 @@ def init_config(path: Path) -> None:
     print(f"Template configuration created at {path}")
 
 
+def build_from_config(evb_config: EVBConfig):
+    try:
+        evb_xml = generate_evb_config_xml(evb_config)
+    except Exception as e:
+        print(f"[ERROR] Failed to build XML: {e}")
+        return
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".evb", encoding="utf-8") as temp_file:
+        temp_file.write(evb_xml)
+        evb_temp_file = Path(temp_file.name)
+    try:
+        execute_evb(str(evb_temp_file))
+    except Exception as e:
+        print(f"[ERROR] Execution failed: {e}")
+    finally:
+        evb_temp_file.unlink(missing_ok=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Easy Enigma VirtualBox builder")
     subparsers = parser.add_subparsers(dest="command")
@@ -150,6 +167,13 @@ def main() -> None:
     parser_build.add_argument(
         "config", nargs="?", default="eevb.json", help="Path to configuration file (default: eevb.json)"
     )
+
+    parser_quick = subparsers.add_parser("quick", help="Quick build without config file")
+    parser_quick.add_argument("-i", "--input", required=True, help="Input exe file")
+    parser_quick.add_argument("-o", "--output", required=True, help="Output exe file")
+    parser_quick.add_argument("-c", "--compress", action="store_true", help="Compress files")
+    parser_quick.add_argument("-d", "--delete_on_exit", action="store_true", help="Delete extracted files on exit")
+    parser_quick.add_argument("items", nargs="*", help="Files or folders to include (DefaultFolder)")
 
     args, extras = parser.parse_known_args()
 
@@ -167,6 +191,13 @@ def main() -> None:
         init_config(Path(args.output))
         return
 
+    if args.command == "quick":
+        _items = EmbeddedItems(DefaultFolder=args.items)
+        _files = FileOptions(delete_on_exit=args.delete_on_exit, compress=args.compress, items=_items)
+        _config = EVBConfig(input=args.input, output=args.output, files=_files)
+        build_from_config(_config)
+        return
+
     if args.command == "build":
         config_path = Path(args.config)
         if not config_path.exists():
@@ -179,22 +210,7 @@ def main() -> None:
             print(f"[ERROR] Failed to read configuration: {e}")
             return
 
-        try:
-            evb_xml = generate_evb_config_xml(evb_config)
-        except Exception as e:
-            print(f"[ERROR] Failed to build XML: {e}")
-            return
-
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".evb", encoding="utf-8") as temp_file:
-            temp_file.write(evb_xml)
-            evb_temp_file = Path(temp_file.name)
-
-        try:
-            execute_evb(str(evb_temp_file))
-        except Exception as e:
-            print(f"[ERROR] Execution failed: {e}")
-        finally:
-            evb_temp_file.unlink(missing_ok=True)
+        build_from_config(evb_config)
 
 
 if __name__ == "__main__":
