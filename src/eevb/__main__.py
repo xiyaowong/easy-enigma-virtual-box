@@ -84,7 +84,7 @@ def generate_evb_config_xml(evb_config: EVBConfig) -> str:
     add_virtual_folder(embedded_files, "%SYSTEM DRIVE%", _items.system_drive)
     add_virtual_folder(embedded_files, "%UserProfile FOLDER%", _items.user_profile_folder)
 
-    xml_bytes = ET.tostring(root, encoding="windows-1252", xml_declaration=True)
+    xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
     return minidom.parseString(xml_bytes).toprettyxml(indent="  ").replace("__EasyEnigmaVirtualBox__", "")
 
 
@@ -179,7 +179,7 @@ def main() -> None:
             print(f"[ERROR] Failed to build XML: {e}")
             return
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".evb", encoding="windows-1252") as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".evb", encoding="utf-8") as temp_file:
             temp_file.write(evb_xml)
             evb_temp_file = Path(temp_file.name)
 
