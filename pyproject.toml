@@ -9,6 +9,9 @@ dependencies = ["pydantic>=2.11.7"]
 [project.scripts]
 eevb = "eevb.__main__:main"
 
+[tool.uv]
+package = true
+
 [tool.setuptools.package-data]
 eevb = ["data/*"]
 
