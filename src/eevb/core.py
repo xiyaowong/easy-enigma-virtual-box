@@ -12,7 +12,10 @@ except ImportError:
 
 
 def execute_evb(*args: str) -> None:
-    subprocess.run([str(Global.EVB_EXECUTABLE), *args], check=True)
+    try:
+        subprocess.run([str(Global.EVB_EXECUTABLE), *args], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Execution failed with error code {e.returncode}")
 
 
 def generate_evb_config_xml(evb_config: EVBConfig) -> str:
